@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CB Particles Against Mouse</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    let particles = [];
+
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      // Initialize particles
+      for (let i = 0; i < 1000; i++) {
+        particles.push(new Particle(random(width), random(height)));
+      }
+      background(0);
+    }
+
+    function draw() {
+      // Slightly transparent background for fading trails
+      background(0, 10);
+      for (let p of particles) {
+        p.update();
+        p.avoid(mouseX, mouseY);
+        p.display();
+      }
+    }
+
+    function keyPressed() {
+      if (key === 'r' || key === 'R') {
+        for (let p of particles) {
+          p.reset();
+        }
+      }
+    }
+
+    class Particle {
+      constructor(x, y) {
+        this.position = createVector(x, y);
+        this.velocity = p5.Vector.random2D();
+        this.acceleration = createVector(0, 0);
+        this.maxSpeed = 2;
+        this.maxForce = 0.1;
+      }
+
+      update() {
+        this.velocity.add(this.acceleration);
+        this.velocity.limit(this.maxSpeed);
+        this.position.add(this.velocity);
+        this.acceleration.mult(0);
+
+        // Bounce off edges
+        if (this.position.x < 0 || this.position.x > width) this.velocity.x *= -1;
+        if (this.position.y < 0 || this.position.y > height) this.velocity.y *= -1;
+      }
+
+      avoid(targetX, targetY) {
+        let target = createVector(targetX, targetY);
+        let desired = p5.Vector.sub(this.position, target);
+        let distance = desired.mag();
+
+        if (distance < 100) { // Avoid only if within a certain distance
+          desired.setMag(this.maxSpeed);
+          let steer = p5.Vector.sub(desired, this.velocity);
+          steer.limit(this.maxForce);
+          this.applyForce(steer);
+        }
+      }
+
+      applyForce(force) {
+        this.acceleration.add(force);
+      }
+
+      display() {
+        stroke(255); // Set stroke color to white
+        strokeWeight(2);
+        point(this.position.x, this.position.y);
+      }
+
+      reset() {
+        this.position.set(random(width), random(height));
+        this.velocity.set(p5.Vector.random2D());
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+  </script>
+</body>
+</html>
