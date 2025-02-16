@@ -28,8 +28,7 @@
     }
 
     function draw() {
-      // Slightly transparent background for fading trails
-      background(0, 10);
+      background(0); // Clear the screen completely on each frame
       for (let p of particles) {
         p.update();
         p.avoid(mouseX, mouseY);
